@@ -71,5 +71,9 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
+# 프로젝트 관련
 /.vsconfig
 /spartaKey.keystore
+
+# Merge Related
+*.orig
