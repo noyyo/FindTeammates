@@ -60,7 +60,7 @@ public class gameManager : MonoBehaviour
             newCard.transform.position = new Vector3(x, y, 0);
 
             string rtanName = "rtan" + rtans[i].ToString();
-            newCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(rtanName);
+            newCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("rtan/" + rtanName);
         }
     }
 
@@ -86,7 +86,6 @@ public class gameManager : MonoBehaviour
             firstCard.GetComponent<card>().destroyCard();
             secondCard.GetComponent<card>().destroyCard();
             int cardsLeft = GameObject.Find("cards").transform.childCount;
-            Debug.Log(cardsLeft);
 
             if (cardsLeft == 2)
             {
