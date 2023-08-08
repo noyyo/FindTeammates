@@ -42,26 +42,13 @@ public class gameManager : MonoBehaviour
     public AudioSource audioSource;
 
     float time;
-
+    int stage = 3; // 스테이지 변수
+    string[] initial = { "KDH", "YJS", "SBE", "JUS" }; //사진 이름 변수
 
     // Start is called before the first frame update
     void Start()
     {
-        int[] rtans = { 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7 };
-        rtans = rtans.OrderBy(item => Random.Range(-1.0f, 1.0f)).ToArray();
-
-        for (int i = 0; i< 16; i++)
-        {
-            GameObject newCard = Instantiate(card);
-            newCard.transform.parent = GameObject.Find("cards").transform;
-
-            float x = (i / 4) * 1.4f - 2.1f;
-            float y = (i % 4) * 1.4f - 3.0f;
-            newCard.transform.position = new Vector3(x, y, 0);
-
-            string rtanName = "rtan" + rtans[i].ToString();
-            newCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("rtan/" + rtanName);
-        }
+        cardArr(stage);
     }
 
     // Update is called once per frame
@@ -80,17 +67,26 @@ public class gameManager : MonoBehaviour
     {
         string firstCardImage = firstCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite.name;
         string secondCardImage = secondCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite.name;
+
+        // '_'이후 문자 저장
+        string firstCardType = firstCardImage.Substring(firstCardImage.IndexOf('_') + 1);
+        string secondCardType = secondCardImage.Substring(secondCardImage.IndexOf('_') + 1);
+
+        // '_'이후 문자 제거로 이니셜 비교
+        firstCardImage = firstCardImage.Substring(0, firstCardImage.LastIndexOf("_"));
+        secondCardImage = secondCardImage.Substring(0, secondCardImage.LastIndexOf("_"));
+
         if (firstCardImage == secondCardImage)
         {
             audioSource.PlayOneShot(match);
-            firstCard.GetComponent<card>().destroyCard();
-            secondCard.GetComponent<card>().destroyCard();
+            // 이미지 타입이 이름인지 구별하여 이름이 아닐시 삭제
+            isName(firstCardType, secondCardType);
+
             int cardsLeft = GameObject.Find("cards").transform.childCount;
 
-            if (cardsLeft == 2)
-            {
-                Invoke("GameEnd", 1f);
-            }
+            //카드수 확인 후 종료
+            isLastCards(cardsLeft, firstCardType, secondCardType);
+
         }
         else
         {
@@ -111,4 +107,77 @@ public class gameManager : MonoBehaviour
     {
         SceneManager.LoadScene("MainScene");
     }
+
+    private void cardArr(int stage)
+    {
+        //이미지 종류 (ex : "name")
+        string[] type = new string[stage + 1];
+        //이미지 이름 (ex : "KDH_name")
+        string[] str = new string[type.Length * initial.Length];
+
+        string[] a = new string[] { "name", "picture", "animal", "game" };
+
+        for (int i = 0; i < stage + 1; i++)
+        {
+            type[i] = a[i];
+        }
+
+        for (int i = 0; i < initial.Length; i++)
+        {
+            for (int j = 0; j < stage + 1; j++)
+            {
+                str[i * (stage + 1) + j] = initial[i] + '_' + type[j];
+            }
+        }
+        str = str.OrderBy(item => Random.Range(-1.0f, 1.0f)).ToArray();
+        for (int i = 0; i < str.Length; i++)
+        {
+            GameObject newCard = Instantiate(card);
+            newCard.transform.parent = GameObject.Find("cards").transform;
+
+            float x = (i / 4) * 1.4f - (0.7f * stage);
+            float y = (i % 4) * 1.4f - 3.0f;
+            newCard.transform.position = new Vector3(x, y, 0);
+
+            string imageName = str[i];
+            newCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("MemberImages/" + imageName);
+        }
+    }
+
+
+    private void isName(string firstCardType, string secondCardType)
+    {
+        if (firstCardType == "name")
+        {
+            firstCard.GetComponent<card>().closeCard();
+            secondCard.GetComponent<card>().destroyCard();
+        }
+        else if (secondCardType == "name")
+        {
+            firstCard.GetComponent<card>().destroyCard();
+            secondCard.GetComponent<card>().closeCard();
+        }
+        else
+        {
+            firstCard.GetComponent<card>().destroyCard();
+            secondCard.GetComponent<card>().destroyCard();
+        }
+    }
+
+    private void isLastCards(int cardsLeft, string firstCardType, string secondCardType)
+    {
+        if (cardsLeft == 6)
+        {
+            if (firstCardType != "name" && secondCardType != "name")
+            {
+                Invoke("GameEnd", 1f);
+            }
+        }
+        else if (cardsLeft <= 5)
+        {
+            Invoke("GameEnd", 1f);
+        }
+    }
+
+
 }
