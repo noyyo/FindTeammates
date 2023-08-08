@@ -26,16 +26,8 @@ public class card : MonoBehaviour
         anim.SetBool("isOpen", true);
         transform.Find("front").gameObject.SetActive(true);
         transform.Find("back").gameObject.SetActive(false);
-
-        if (gameManager.I.firstCard == null)
-        {
-            gameManager.I.firstCard = gameObject;
-        }
-        else
-        {
-            gameManager.I.secondCard = gameObject;
-            gameManager.I.isMatched();
-        }
+        gameManager.I.choosedCard = gameObject;
+        gameManager.I.Match();
 
     }
 
@@ -49,9 +41,9 @@ public class card : MonoBehaviour
         Destroy(gameObject);
     }
 
-    public void closeCard()
+    public void closeCard(float delay = 1f)
     {
-        Invoke("closeCardInvoke", 1.0f);
+        Invoke("closeCardInvoke", delay);
     }
 
     void closeCardInvoke()

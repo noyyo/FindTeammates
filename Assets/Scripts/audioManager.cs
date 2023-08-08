@@ -4,6 +4,30 @@ using UnityEngine;
 
 public class audioManager : MonoBehaviour
 {
+    private static audioManager i;
+    public static audioManager I
+    {
+        get
+        {
+            if (i == null)
+            {
+                i = new audioManager();
+            }
+            return i;
+        }
+    }
+    private void Awake()
+    {
+        if (i == null)
+        {
+            i = this;
+        }
+        if (this != i)
+        {
+            Destroy(gameObject);
+        }
+    }
+
     public AudioClip bgMusic;
     public AudioSource audioSource;
     // Start is called before the first frame update
@@ -13,9 +37,8 @@ public class audioManager : MonoBehaviour
         audioSource.Play();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void SetPitch(float ratio)
     {
-        
+        audioSource.pitch = ratio;
     }
 }
