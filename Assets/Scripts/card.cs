@@ -23,14 +23,16 @@ public class card : MonoBehaviour
 
     public void openCard()
     {
-        n = Random.Range(0, 3);
+        n = Random.Range(0, 4);
         audioSource.PlayOneShot(flip);
         if (n == 0)
             anim.SetBool("isOpen", true);
         else if (n == 1)
             anim.SetBool("isOpen2", true);
-        else
+        else if(n == 2)
             anim.SetBool("isOpen3", true);
+        else
+            anim.SetBool("isOpen4", true);
         transform.Find("front").gameObject.SetActive(true);
         transform.Find("back").gameObject.SetActive(false);
         gameManager.I.choosedCard = gameObject;
@@ -58,8 +60,10 @@ public class card : MonoBehaviour
             anim.SetBool("isOpen", false);
         else if (n == 1)
             anim.SetBool("isOpen2", false);
-        else
+        else if(n == 2)
             anim.SetBool("isOpen3", false);
+        else
+            anim.SetBool("isOpen4", false);
         transform.Find("back").gameObject.SetActive(true);
         transform.Find("front").gameObject.SetActive(false);
     }
