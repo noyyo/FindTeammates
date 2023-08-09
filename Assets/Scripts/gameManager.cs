@@ -5,6 +5,7 @@ using UnityEngine;
 using System.Linq;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine.SceneManagement;
+using Unity.VisualScripting;
 
 public class gameManager : MonoBehaviour
 {
@@ -34,6 +35,11 @@ public class gameManager : MonoBehaviour
     }
 
     public TextMeshProUGUI timeTxt;
+
+    public TextMeshProUGUI matchingTry_1;
+    public TextMeshProUGUI bestScore_1;
+    public TextMeshProUGUI stage_1;
+
     public GameObject endTxt;
     public GameObject card;
     public TextMeshProUGUI matchingTryNum;
@@ -45,13 +51,17 @@ public class gameManager : MonoBehaviour
     private float time = 20f;
     private bool isWarning = false;
     private int matchingCount = 0;
-    int stage = 3; // 스테이지 변수
+    int stage = stageManager.stageNum; // 스테이지 변수
     string[] initial = { "KDH", "YJS", "SBE", "JUS" }; //사진 이름 변수
+    int[] matchingTry = new int[3];
 
     // Start is called before the first frame update
     void Start()
     {
         focusedMember.MemberClicked();
+        timeScoreReset();
+        stage_1.text = stage.ToString();
+        bestScore_1.text = stageManager.bestScore[stage-1].ToString("D2") ;
         cardArr(stage);
     }
 

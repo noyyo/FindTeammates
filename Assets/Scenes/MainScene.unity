@@ -695,6 +695,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timeTxt: {fileID: 53404507}
+  matchingTry_1: {fileID: 704587070}
+  bestScore_1: {fileID: 705484146}
+  stage_1: {fileID: 334256505}
   endTxt: {fileID: 1955660334}
   card: {fileID: 4503484048088155125, guid: 30fcc2001b7f0d34cbb00a78f79ed3f2, type: 3}
   matchingTryNum: {fileID: 704587070}
