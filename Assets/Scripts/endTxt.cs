@@ -21,4 +21,9 @@ public class endTxt : MonoBehaviour
     {
         SceneManager.LoadScene("MainScene");
     }
+    public void Exit()
+    {
+        SceneManager.LoadScene("SelectScene");
+    }
+
 }

@@ -1489,6 +1489,10 @@ MonoBehaviour:
   bestScore_1: {fileID: 131028152}
   bestScore_2: {fileID: 2062000202}
   bestScore_3: {fileID: 1721889656}
+  lockStage_2: {fileID: 213766546}
+  openStage_2: {fileID: 128042692}
+  lockStage_3: {fileID: 1532136142}
+  openStage_3: {fileID: 379473145}
 --- !u!1 &765824610
 GameObject:
   m_ObjectHideFlags: 0
