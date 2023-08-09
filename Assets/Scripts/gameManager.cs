@@ -36,68 +36,79 @@ public class gameManager : MonoBehaviour
     public TextMeshProUGUI timeTxt;
     public GameObject endTxt;
     public GameObject card;
-    public GameObject firstCard;
-    public GameObject secondCard;
+    public TextMeshProUGUI matchingTryNum;
+    public Member focusedMember;
+    public GameObject choosedCard;
     public AudioClip match;
     public AudioSource audioSource;
 
-    float time;
+    private float time = 20f;
+    private bool isWarning = false;
+    private int matchingCount = 0;
     int stage = 3; // 스테이지 변수
     string[] initial = { "KDH", "YJS", "SBE", "JUS" }; //사진 이름 변수
 
     // Start is called before the first frame update
     void Start()
     {
+        focusedMember.MemberClicked();
         cardArr(stage);
     }
 
     // Update is called once per frame
     void Update()
     {
-        time += Time.deltaTime;
+        time -= Time.deltaTime;
         timeTxt.text = time.ToString("N2");
 
-        if (time > 30f)
+        if (time < 10f)
         {
+            if (isWarning == false)
+            {
+                timeTxt.GetComponent<Animator>().SetBool("isImminent", true);
+                audioManager.I.SetPitch(1.2f);
+                isWarning = true;
+            }
+        }
+        if (time < 0f)
+        {
+            timeTxt.text = "0.00";
             Invoke("GameEnd",0f);
         }
     }
-
-    public void isMatched()
+    public void ChangeFocus(Member FocusMember)
     {
-        string firstCardImage = firstCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite.name;
-        string secondCardImage = secondCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite.name;
+        focusedMember.anim.SetBool("isFocused", false);
+        FocusMember.anim.SetBool("isFocused", true);
+        focusedMember = FocusMember;
 
-        // '_'이후 문자 저장
-        string firstCardType = firstCardImage.Substring(firstCardImage.IndexOf('_') + 1);
-        string secondCardType = secondCardImage.Substring(secondCardImage.IndexOf('_') + 1);
+    }
+    public void Match()
+    {
 
-        // '_'이후 문자 제거로 이니셜 비교
-        firstCardImage = firstCardImage.Substring(0, firstCardImage.LastIndexOf("_"));
-        secondCardImage = secondCardImage.Substring(0, secondCardImage.LastIndexOf("_"));
+        string choosedCardInitial = choosedCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite.name.Substring(0, 3);
+        string focuesdMemberInitial = focusedMember.name;
 
-        if (firstCardImage == secondCardImage)
+        if (choosedCardInitial == focuesdMemberInitial)
         {
             audioSource.PlayOneShot(match);
-            // 이미지 타입이 이름인지 구별하여 이름이 아닐시 삭제
-            isName(firstCardType, secondCardType);
-
+            choosedCard.GetComponent<card>().destroyCard();
+            focusedMember.anim.SetTrigger("isMatched");
             int cardsLeft = GameObject.Find("cards").transform.childCount;
 
-            //카드수 확인 후 종료
-            isLastCards(cardsLeft, firstCardType, secondCardType);
-
+            if (cardsLeft == 1)
+            {
+                Invoke("GameEnd", 1f);
+            }
         }
         else
         {
-            firstCard.GetComponent<card>().closeCard();
-            secondCard.GetComponent<card>().closeCard();
+            focusedMember.anim.SetTrigger("isFailed");
+            choosedCard.GetComponent<card>().closeCard();
         }
-
-        firstCard = null;
-        secondCard = null;
+        matchingTryNum.text = (++matchingCount).ToString("D2");
+        choosedCard = null;
     }
-
     void GameEnd()
     {
         Time.timeScale = 0;
@@ -110,23 +121,23 @@ public class gameManager : MonoBehaviour
 
     private void cardArr(int stage)
     {
-        //이미지 종류 (ex : "name")
-        string[] type = new string[stage + 1];
+        //이미지 종류 (ex : "picture")
+        string[] type = new string[stage];
         //이미지 이름 (ex : "KDH_name")
         string[] str = new string[type.Length * initial.Length];
 
-        string[] a = new string[] { "name", "picture", "animal", "game" };
+        string[] a = new string[] { "picture", "animal", "game" };
 
-        for (int i = 0; i < stage + 1; i++)
+        for (int i = 0; i < stage; i++)
         {
             type[i] = a[i];
         }
 
         for (int i = 0; i < initial.Length; i++)
         {
-            for (int j = 0; j < stage + 1; j++)
+            for (int j = 0; j < stage; j++)
             {
-                str[i * (stage + 1) + j] = initial[i] + '_' + type[j];
+                str[i * stage + j] = initial[i] + '_' + type[j];
             }
         }
         str = str.OrderBy(item => Random.Range(-1.0f, 1.0f)).ToArray();
@@ -143,41 +154,4 @@ public class gameManager : MonoBehaviour
             newCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("MemberImages/" + imageName);
         }
     }
-
-
-    private void isName(string firstCardType, string secondCardType)
-    {
-        if (firstCardType == "name")
-        {
-            firstCard.GetComponent<card>().closeCard();
-            secondCard.GetComponent<card>().destroyCard();
-        }
-        else if (secondCardType == "name")
-        {
-            firstCard.GetComponent<card>().destroyCard();
-            secondCard.GetComponent<card>().closeCard();
-        }
-        else
-        {
-            firstCard.GetComponent<card>().destroyCard();
-            secondCard.GetComponent<card>().destroyCard();
-        }
-    }
-
-    private void isLastCards(int cardsLeft, string firstCardType, string secondCardType)
-    {
-        if (cardsLeft == 6)
-        {
-            if (firstCardType != "name" && secondCardType != "name")
-            {
-                Invoke("GameEnd", 1f);
-            }
-        }
-        else if (cardsLeft <= 5)
-        {
-            Invoke("GameEnd", 1f);
-        }
-    }
-
-
 }
