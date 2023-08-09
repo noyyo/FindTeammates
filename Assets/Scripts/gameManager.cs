@@ -36,8 +36,6 @@ public class gameManager : MonoBehaviour
 
     public TextMeshProUGUI timeTxt;
     public TextMeshProUGUI stage_1;
-    public TextMeshProUGUI bestScoreTxt;
-    public TextMeshProUGUI matchingTryTxt;
     public GameObject retryText; //endText를 retryText로 변경
     public GameObject exitText; //추가(SelectScene으로 가는 버튼)
     public GameObject card;
@@ -48,15 +46,16 @@ public class gameManager : MonoBehaviour
     public AudioClip match;
     public AudioSource audioSource;
     public TextMeshProUGUI bestScoreNum;
+    //중복되어 있는 텍스트 삭제
 
-    private float time = 20f;
+    private float time = 60f;
+    private float origintime = 60f; // 초기 시간값을 통해 스코어 변화를 주기 위한 변수(위에 시간 변경 시 같이 변경해 주세요~~)
     private bool isWarning = false;
     private int[] matchingCount = new int[3]; // 매칭횟수 변수 [stage 갯수]
-    int stage = stageManager.stageNum; // 스테이지 변수
-    int totalscore = 0;
-    int score = 0;
-    int count = 0;
-    string[] initial = { "KDH", "YJS", "SBE", "JUS" }; //사진 이름 변수
+    private int stage = stageManager.stageNum; // 스테이지 변수
+    private int totalscore = 0;
+    private int score = 0;
+    private string[] initial = { "KDH", "YJS", "SBE", "JUS" }; //사진 이름 변수
 
     // Start is called before the first frame update
     void Start()
@@ -64,7 +63,7 @@ public class gameManager : MonoBehaviour
         focusedMember.MemberClicked(); // 애니메이션?
         timeScoreReset(); // 재시작시 시간 초기화
         stage_1.text = stage.ToString(); // 스테이지 값 변환 (우측 상단 stage 1 <-1
-        bestScoreNum.text = stageManager.bestScore[stage-1].ToString("D2") ; // 최고점수
+        //bestScoreNum.text = stageManager.bestScore[stage-1].ToString("D2") ; // 최고점수
         cardArr(stage); //카드 배치
     }
 
@@ -93,7 +92,7 @@ public class gameManager : MonoBehaviour
     public void addScore(int score)// 스코어 추가
     {
         totalscore += score;
-        bestScoreTxt.text = totalscore.ToString();
+        bestScoreNum.text = totalscore.ToString("D2");
     }
     public void minusTime()
     {
@@ -123,38 +122,27 @@ public class gameManager : MonoBehaviour
             focusedMember.anim.SetTrigger("isMatched");
             int cardsLeft = GameObject.Find("cards").transform.childCount;
 
+            if (time >= origintime * 5 / 6)
+                score = 6;
+            else if (time >= origintime * 4 / 6)
+                score = 5;
+            else if (time >= origintime * 3 / 6)
+                score = 4;
+            else if (time >= origintime * 2 / 6)
+                score = 3;
+            else if (time >= origintime * 1 / 6)
+                score = 2;
+            else
+                score = 1;
+            addScore(score);
+            // 시간별로 스코어를 다르게 추가해줌
+
             if (cardsLeft == 1)
             {
-                stageManager.bestScore[stage - 1] = isBestScore(matchingCount[stage - 1] + 1, stageManager.bestScore[stage - 1]);
-                bestScoreNum.text = stageManager.bestScore[stage - 1].ToString("D2");
+                stageManager.bestScore[stage - 1] = isBestScore(totalscore, stageManager.bestScore[stage - 1]);
                 Invoke("GameEnd", 1f);
             }
-            if (time >= 50f)
-            {
-                score = 6;
-            }
-            else if (time >= 40f && time < 50f)
-            {
-                score = 5;
-            }
-            else if (time >= 30f && time < 40f)
-            {
-                score = 4;
-            }
-            else if (time >= 20f && time < 30f)
-            {
-                score = 3;
-            }
-            else if (time >= 10f && time < 20f)
-            {
-                score = 2;
-            }
-            else
-            {
-                score = 1;
-            }
-            addScore(score);
-            // 시간별로 스코어를 다르게 추가해줌 
+
         }
         else
         {
@@ -219,12 +207,12 @@ public class gameManager : MonoBehaviour
         Time.timeScale = 1;
     }
 
-    private int isBestScore(int matchingCount, int bestSore)
+    private int isBestScore(int totalscore, int bestSore)
     {
         if (bestSore == 0)
-            bestSore = matchingCount;
-        else if (bestSore > matchingCount)
-            bestSore = matchingCount;
+            bestSore = totalscore;
+        else if (bestSore < totalscore)
+            bestSore = totalscore;
         return bestSore;
     }
 }
