@@ -21,7 +21,7 @@ public class gameManager : MonoBehaviour
             }
         }
 
-    private void Awake()
+    void Awake()
     {
         if (i == null)
         {
@@ -31,28 +31,30 @@ public class gameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+        DontDestroyOnLoad(gameObject);
     }
+    
 
     public TextMeshProUGUI timeTxt;
     public GameObject endTxt;
     public GameObject card;
+    public TextMeshProUGUI stageNum;
     public TextMeshProUGUI matchingTryNum;
     public Member focusedMember;
     public GameObject choosedCard;
     public AudioClip match;
     public AudioSource audioSource;
+    public Collocator collocator;
 
-    private float time = 20f;
-    private bool isWarning = false;
-    private int matchingCount = 0;
-    int stage = 3; // 스테이지 변수
+    private float time;
+    private bool isWarning;
+    private int matchingCount;
+    int stage; // 스테이지 변수
     string[] initial = { "KDH", "YJS", "SBE", "JUS" }; //사진 이름 변수
 
     // Start is called before the first frame update
     void Start()
     {
-        focusedMember.MemberClicked();
-        cardArr(stage);
     }
 
     // Update is called once per frame
@@ -65,9 +67,7 @@ public class gameManager : MonoBehaviour
         {
             if (isWarning == false)
             {
-                timeTxt.GetComponent<Animator>().SetBool("isImminent", true);
-                audioManager.I.SetPitch(1.2f);
-                isWarning = true;
+                WarningRemainingTime();
             }
         }
         if (time < 0f)
@@ -76,8 +76,30 @@ public class gameManager : MonoBehaviour
             Invoke("GameEnd",0f);
         }
     }
+
+    public void StartStage(int stage)
+    {
+        stageNum.text = stage.ToString();
+        cardArr(stage);
+        this.time = stage * 20f;
+        isWarning = false;
+        matchingCount = 0;
+        Time.timeScale = 1f;
+    }
     public void ChangeFocus(Member FocusMember)
     {
+        if (focusedMember == null)
+        {
+            focusedMember = FocusMember;
+            focusedMember.anim.SetBool("isFocused", true);
+            return;
+        }
+        if (focusedMember == FocusMember)
+        {
+            focusedMember.anim.SetBool("isFocused", false);
+            focusedMember = null;
+            return;
+        }
         focusedMember.anim.SetBool("isFocused", false);
         FocusMember.anim.SetBool("isFocused", true);
         focusedMember = FocusMember;
@@ -87,7 +109,8 @@ public class gameManager : MonoBehaviour
     {
 
         string choosedCardInitial = choosedCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite.name.Substring(0, 3);
-        string focuesdMemberInitial = focusedMember.name;
+        string focuesdMemberInitial = focusedMember.initial;
+
 
         if (choosedCardInitial == focuesdMemberInitial)
         {
@@ -108,15 +131,28 @@ public class gameManager : MonoBehaviour
         }
         matchingTryNum.text = (++matchingCount).ToString("D2");
         choosedCard = null;
+        focusedMember.anim.SetBool("isFocused", false);
+        focusedMember = null;
     }
-    void GameEnd()
+    private void GameEnd()
     {
         Time.timeScale = 0;
         endTxt.SetActive(true);
+        timeTxt.GetComponent<Animator>().SetBool("isImminent", false);
+        audioManager.I.SetPitch(1f);
+        isWarning = false;
     }
     public void retryGame()
     {
-        SceneManager.LoadScene("MainScene");
+        SceneManager.LoadScene(SceneManager.GetActiveScene().ToString());
+        StartStage(stage);
+    }
+
+    private void WarningRemainingTime()
+    {
+        timeTxt.GetComponent<Animator>().SetBool("isImminent", true);
+        audioManager.I.SetPitch(1.2f);
+        isWarning = true;
     }
 
     private void cardArr(int stage)
@@ -141,17 +177,14 @@ public class gameManager : MonoBehaviour
             }
         }
         str = str.OrderBy(item => Random.Range(-1.0f, 1.0f)).ToArray();
-        for (int i = 0; i < str.Length; i++)
+        collocator.amountToMake = str.Length;
+        int count = 0;
+        foreach (GameObject obj in collocator.InstantiatePrefab())
         {
-            GameObject newCard = Instantiate(card);
-            newCard.transform.parent = GameObject.Find("cards").transform;
-
-            float x = (i / 4) * 1.4f - (0.7f * stage);
-            float y = (i % 4) * 1.4f - 3.0f;
-            newCard.transform.position = new Vector3(x, y, 0);
-
-            string imageName = str[i];
-            newCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("MemberImages/" + imageName);
+            string imageName = str[count];
+            obj.transform.Find("front").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("MemberImages/" + imageName);
+            count++;
         }
     }
+
 }

@@ -23,5 +23,10 @@ public class Member : MonoBehaviour
     public void MemberClicked()
     {
         gameManager.I.ChangeFocus(this);
+        
+        if (gameManager.I.choosedCard != null)
+        {
+            gameManager.I.Match();
+        }
     }
 }
