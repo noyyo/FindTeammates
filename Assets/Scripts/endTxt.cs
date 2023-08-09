@@ -19,7 +19,7 @@ public class endTxt : MonoBehaviour
 
     public void ReGame()
     {
-        adsManager.I.ShowRewardAd();
-        //SceneManager.LoadScene("MainScene");
+        //adsManager.I.ShowRewardAd();
+        SceneManager.LoadScene("SelectScene");
     }
 }

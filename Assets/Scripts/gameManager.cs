@@ -5,6 +5,7 @@ using UnityEngine;
 using System.Linq;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine.SceneManagement;
+using Unity.VisualScripting;
 
 public class gameManager : MonoBehaviour
 {
@@ -34,6 +35,11 @@ public class gameManager : MonoBehaviour
     }
 
     public TextMeshProUGUI timeTxt;
+
+    public TextMeshProUGUI matchingTry_1;
+    public TextMeshProUGUI bestScore_1;
+    public TextMeshProUGUI stage_1;
+
     public GameObject endTxt;
     public GameObject card;
     public GameObject firstCard;
@@ -41,13 +47,18 @@ public class gameManager : MonoBehaviour
     public AudioClip match;
     public AudioSource audioSource;
 
+
     float time;
-    int stage = 3; // 스테이지 변수
+    int stage = stageManager.stageNum; // 스테이지 변수
     string[] initial = { "KDH", "YJS", "SBE", "JUS" }; //사진 이름 변수
+    int[] matchingTry = new int[3];
 
     // Start is called before the first frame update
     void Start()
     {
+        variableReset();
+        stage_1.text = stage.ToString();
+        bestScore_1.text = stageManager.bestScore[stage-1].ToString("D2") ;
         cardArr(stage);
     }
 
@@ -76,9 +87,14 @@ public class gameManager : MonoBehaviour
         firstCardImage = firstCardImage.Substring(0, firstCardImage.LastIndexOf("_"));
         secondCardImage = secondCardImage.Substring(0, secondCardImage.LastIndexOf("_"));
 
+        //매칭 시도와 최고 점수
+        matchingTry[stage-1]++;
+        matchingTry_1.text = matchingTry[stage-1].ToString("D2");
+
         if (firstCardImage == secondCardImage)
         {
             audioSource.PlayOneShot(match);
+
             // 이미지 타입이 이름인지 구별하여 이름이 아닐시 삭제
             isName(firstCardType, secondCardType);
 
@@ -170,14 +186,33 @@ public class gameManager : MonoBehaviour
         {
             if (firstCardType != "name" && secondCardType != "name")
             {
+                stageManager.bestScore[stage -1] = isBestScore(matchingTry[stage -1], stageManager.bestScore[stage -1]);
+                Debug.Log("bestScore[" + (stage - 1) + "] == " + stageManager.bestScore[stage - 1]);
+                bestScore_1.text = stageManager.bestScore[stage-1].ToString("D2");
                 Invoke("GameEnd", 1f);
             }
         }
         else if (cardsLeft <= 5)
         {
+            stageManager.bestScore[stage - 1] = isBestScore(matchingTry[stage - 1], stageManager.bestScore[stage - 1]);
+            Debug.Log("bestScore["+ (stage - 1) + "] == " + stageManager.bestScore[stage - 1]);
+            bestScore_1.text = stageManager.bestScore[stage - 1].ToString("D2");
             Invoke("GameEnd", 1f);
         }
     }
 
+    private int isBestScore(int matchingTry, int bestSore)
+    {
+        if (bestSore == 0)
+            bestSore = matchingTry;
+        else if(bestSore > matchingTry) 
+            bestSore = matchingTry;
+        return bestSore;
+    }
+
+    private void variableReset()
+    {
+        Time.timeScale = 1;
+    }
 
 }
