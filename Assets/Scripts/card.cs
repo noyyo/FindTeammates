@@ -10,6 +10,9 @@ public class card : MonoBehaviour
     public int flipCount;
     public bool isFliped;
 
+    int n;
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -32,8 +35,16 @@ public class card : MonoBehaviour
             gameManager.I.choosedCard = null;
             return;
         }
+        n = Random.Range(0, 4);
         audioSource.PlayOneShot(flip);
-        anim.SetBool("isOpen", true);
+        if (n == 0)
+            anim.SetBool("isOpen", true);
+        else if (n == 1)
+            anim.SetBool("isOpen2", true);
+        else if(n == 2)
+            anim.SetBool("isOpen3", true);
+        else
+            anim.SetBool("isOpen4", true);
         transform.Find("front").gameObject.SetActive(true);
         transform.Find("back").gameObject.SetActive(false);
         gameManager.I.choosedCard = gameObject;
@@ -44,7 +55,6 @@ public class card : MonoBehaviour
         {
             gameManager.I.Match();
         }
-
     }
 
     public void destroyCard()
@@ -64,7 +74,14 @@ public class card : MonoBehaviour
 
     void closeCardInvoke()
     {
-        anim.SetBool("isOpen", false);
+        if (n == 0)
+            anim.SetBool("isOpen", false);
+        else if (n == 1)
+            anim.SetBool("isOpen2", false);
+        else if(n == 2)
+            anim.SetBool("isOpen3", false);
+        else
+            anim.SetBool("isOpen4", false);
         transform.Find("back").gameObject.SetActive(true);
         transform.Find("front").gameObject.SetActive(false);
     }
