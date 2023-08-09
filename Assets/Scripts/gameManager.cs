@@ -5,6 +5,7 @@ using UnityEngine;
 using System.Linq;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine.SceneManagement;
+using Unity.VisualScripting;
 
 public class gameManager : MonoBehaviour
 {
@@ -34,33 +35,40 @@ public class gameManager : MonoBehaviour
     }
 
     public TextMeshProUGUI timeTxt;
-    public GameObject endTxt;
+    public TextMeshProUGUI stage_1;
+    public GameObject retryText; //endText를 retryText로 변경
+    public GameObject exitText; //추가(SelectScene으로 가는 버튼)
     public GameObject card;
     public TextMeshProUGUI matchingTryNum;
-    public Member focusedMember;
+    public Member focusedMember; //member 클래스
     public GameObject choosedCard;
     public AudioClip match;
     public AudioSource audioSource;
+    public TextMeshProUGUI bestScoreNum;
 
     private float time = 20f;
     private bool isWarning = false;
-    private int matchingCount = 0;
-    int stage = 3; // 스테이지 변수
+    private int[] matchingCount = new int[3]; // 매칭횟수 변수 [stage 갯수]
+    int stage = stageManager.stageNum; // 스테이지 변수
     string[] initial = { "KDH", "YJS", "SBE", "JUS" }; //사진 이름 변수
 
     // Start is called before the first frame update
     void Start()
     {
-        focusedMember.MemberClicked();
-        cardArr(stage);
+        focusedMember.MemberClicked(); // 애니메이션?
+        timeScoreReset(); // 재시작시 시간 초기화
+        stage_1.text = stage.ToString(); // 스테이지 값 변환 (우측 상단 stage 1 <-1
+        bestScoreNum.text = stageManager.bestScore[stage-1].ToString("D2") ; // 최고점수
+        cardArr(stage); //카드 배치
     }
 
     // Update is called once per frame
     void Update()
     {
-        time -= Time.deltaTime;
-        timeTxt.text = time.ToString("N2");
+        time -= Time.deltaTime; //초기 값에서 시간을 감소
+        timeTxt.text = time.ToString("N2"); // 시간을 2자리 표시
 
+        // 시간이 10초 미만일때 효과 및 종료
         if (time < 10f)
         {
             if (isWarning == false)
@@ -81,14 +89,13 @@ public class gameManager : MonoBehaviour
         focusedMember.anim.SetBool("isFocused", false);
         FocusMember.anim.SetBool("isFocused", true);
         focusedMember = FocusMember;
-
     }
     public void Match()
     {
-
+        
         string choosedCardInitial = choosedCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite.name.Substring(0, 3);
-        string focuesdMemberInitial = focusedMember.name;
-
+        string focuesdMemberInitial = focusedMember.initial;
+        // 위에 선택된 카드의 이니셜 == 내가 선택한 카드의 이니셜과 같을 때
         if (choosedCardInitial == focuesdMemberInitial)
         {
             audioSource.PlayOneShot(match);
@@ -98,6 +105,8 @@ public class gameManager : MonoBehaviour
 
             if (cardsLeft == 1)
             {
+                stageManager.bestScore[stage - 1] = isBestScore(matchingCount[stage - 1] + 1, stageManager.bestScore[stage - 1]);
+                bestScoreNum.text = stageManager.bestScore[stage - 1].ToString("D2");
                 Invoke("GameEnd", 1f);
             }
         }
@@ -106,13 +115,14 @@ public class gameManager : MonoBehaviour
             focusedMember.anim.SetTrigger("isFailed");
             choosedCard.GetComponent<card>().closeCard();
         }
-        matchingTryNum.text = (++matchingCount).ToString("D2");
+        matchingTryNum.text = (++matchingCount[stage-1]).ToString("D2");
         choosedCard = null;
     }
     void GameEnd()
     {
         Time.timeScale = 0;
-        endTxt.SetActive(true);
+        retryText.SetActive(true);
+        exitText.SetActive(true);
     }
     public void retryGame()
     {
@@ -153,5 +163,19 @@ public class gameManager : MonoBehaviour
             string imageName = str[i];
             newCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("MemberImages/" + imageName);
         }
+    }
+
+    private void timeScoreReset()
+    {
+        Time.timeScale = 1;
+    }
+
+    private int isBestScore(int matchingCount, int bestSore)
+    {
+        if (bestSore == 0)
+            bestSore = matchingCount;
+        else if (bestSore > matchingCount)
+            bestSore = matchingCount;
+        return bestSore;
     }
 }
