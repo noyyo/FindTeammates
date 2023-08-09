@@ -36,9 +36,12 @@ public class gameManager : MonoBehaviour
 
     public TextMeshProUGUI timeTxt;
     public TextMeshProUGUI stage_1;
+    public TextMeshProUGUI bestScoreTxt;
+    public TextMeshProUGUI matchingTryTxt;
     public GameObject retryText; //endText를 retryText로 변경
     public GameObject exitText; //추가(SelectScene으로 가는 버튼)
     public GameObject card;
+    public GameObject minusTxt; //마이너스 텍스트 
     public TextMeshProUGUI matchingTryNum;
     public Member focusedMember; //member 클래스
     public GameObject choosedCard;
@@ -50,6 +53,9 @@ public class gameManager : MonoBehaviour
     private bool isWarning = false;
     private int[] matchingCount = new int[3]; // 매칭횟수 변수 [stage 갯수]
     int stage = stageManager.stageNum; // 스테이지 변수
+    int totalscore = 0;
+    int score = 0;
+    int count = 0;
     string[] initial = { "KDH", "YJS", "SBE", "JUS" }; //사진 이름 변수
 
     // Start is called before the first frame update
@@ -84,6 +90,20 @@ public class gameManager : MonoBehaviour
             Invoke("GameEnd",0f);
         }
     }
+    public void addScore(int score)// 스코어 추가
+    {
+        totalscore += score;
+        bestScoreTxt.text = totalscore.ToString();
+    }
+    public void minusTime()
+    {
+        Invoke("minusTimeInvoke", 1.0f);
+    }
+
+    void minusTimeInvoke()
+    {
+        minusTxt.SetActive(false);
+    }
     public void ChangeFocus(Member FocusMember)
     {
         focusedMember.anim.SetBool("isFocused", false);
@@ -109,9 +129,38 @@ public class gameManager : MonoBehaviour
                 bestScoreNum.text = stageManager.bestScore[stage - 1].ToString("D2");
                 Invoke("GameEnd", 1f);
             }
+            if (time >= 50f)
+            {
+                score = 6;
+            }
+            else if (time >= 40f && time < 50f)
+            {
+                score = 5;
+            }
+            else if (time >= 30f && time < 40f)
+            {
+                score = 4;
+            }
+            else if (time >= 20f && time < 30f)
+            {
+                score = 3;
+            }
+            else if (time >= 10f && time < 20f)
+            {
+                score = 2;
+            }
+            else
+            {
+                score = 1;
+            }
+            addScore(score);
+            // 시간별로 스코어를 다르게 추가해줌 
         }
         else
         {
+            minusTxt.SetActive(true);
+            minusTime();
+            time -= 2; // 매칭 실패시 시간 감소
             focusedMember.anim.SetTrigger("isFailed");
             choosedCard.GetComponent<card>().closeCard();
         }
