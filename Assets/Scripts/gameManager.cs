@@ -41,31 +41,18 @@ public class gameManager : MonoBehaviour
     public GameObject choosedCard;
     public AudioClip match;
     public AudioSource audioSource;
-    
+
     private float time = 20f;
     private bool isWarning = false;
     private int matchingCount = 0;
+    int stage = 3; // 스테이지 변수
+    string[] initial = { "KDH", "YJS", "SBE", "JUS" }; //사진 이름 변수
 
     // Start is called before the first frame update
     void Start()
     {
         focusedMember.MemberClicked();
-        int[] rtans = { 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7 };
-        rtans = rtans.OrderBy(item => Random.Range(-1.0f, 1.0f)).ToArray();
-
-        for (int i = 0; i< 16; i++)
-        {
-            GameObject newCard = Instantiate(card);
-            newCard.transform.parent = GameObject.Find("cards").transform;
-
-            float x = (i / 4) * 1.4f - 2.1f;
-            float y = (i % 4) * 1.4f - 5.0f;
-            newCard.transform.position = new Vector3(x, y, 0);
-
-            string rtanName = "rtan" + rtans[i].ToString("");
-            newCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("rtan/" + rtanName);
-        }
-        
+        cardArr(stage);
     }
 
     // Update is called once per frame
@@ -130,5 +117,41 @@ public class gameManager : MonoBehaviour
     public void retryGame()
     {
         SceneManager.LoadScene("MainScene");
+    }
+
+    private void cardArr(int stage)
+    {
+        //이미지 종류 (ex : "picture")
+        string[] type = new string[stage];
+        //이미지 이름 (ex : "KDH_name")
+        string[] str = new string[type.Length * initial.Length];
+
+        string[] a = new string[] { "picture", "animal", "game" };
+
+        for (int i = 0; i < stage; i++)
+        {
+            type[i] = a[i];
+        }
+
+        for (int i = 0; i < initial.Length; i++)
+        {
+            for (int j = 0; j < stage; j++)
+            {
+                str[i * stage + j] = initial[i] + '_' + type[j];
+            }
+        }
+        str = str.OrderBy(item => Random.Range(-1.0f, 1.0f)).ToArray();
+        for (int i = 0; i < str.Length; i++)
+        {
+            GameObject newCard = Instantiate(card);
+            newCard.transform.parent = GameObject.Find("cards").transform;
+
+            float x = (i / 4) * 1.4f - (0.7f * stage);
+            float y = (i % 4) * 1.4f - 3.0f;
+            newCard.transform.position = new Vector3(x, y, 0);
+
+            string imageName = str[i];
+            newCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("MemberImages/" + imageName);
+        }
     }
 }
