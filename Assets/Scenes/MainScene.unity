@@ -696,8 +696,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeTxt: {fileID: 53404507}
   stage_1: {fileID: 334256505}
-  bestScoreTxt: {fileID: 705484146}
-  matchingTryTxt: {fileID: 704587070}
   retryText: {fileID: 1005492180}
   exitText: {fileID: 1955660334}
   card: {fileID: 4503484048088155125, guid: 30fcc2001b7f0d34cbb00a78f79ed3f2, type: 3}
@@ -708,6 +706,7 @@ MonoBehaviour:
   match: {fileID: 8300000, guid: 7ed35029a8fd75b4cb02811353f8edff, type: 3}
   audioSource: {fileID: 238576316}
   bestScoreNum: {fileID: 705484146}
+  nextMember: {fileID: 0}
 --- !u!4 &238576315
 Transform:
   m_ObjectHideFlags: 0
@@ -833,7 +832,7 @@ GameObject:
   - component: {fileID: 259969888}
   m_Layer: 0
   m_Name: memberKDH
-  m_TagString: Untagged
+  m_TagString: KDH
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2486,7 +2485,7 @@ GameObject:
   - component: {fileID: 1174374745}
   m_Layer: 0
   m_Name: memberSBE
-  m_TagString: Untagged
+  m_TagString: SBE
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3166,7 +3165,7 @@ GameObject:
   - component: {fileID: 1467103483}
   m_Layer: 0
   m_Name: memberJUS
-  m_TagString: Untagged
+  m_TagString: JUS
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4589,7 +4588,7 @@ GameObject:
   - component: {fileID: 751438811940954402}
   m_Layer: 0
   m_Name: memberYJS
-  m_TagString: Untagged
+  m_TagString: YJS
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
