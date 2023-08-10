@@ -76,7 +76,6 @@ public class gameManager : MonoBehaviour
     void Start()
     {
         StartStage();
-        //bestScoreNum.text = stageManager.bestScore[stage-1].ToString("D2") ; // 최고점수
     }
 
     // Update is called once per frame
@@ -117,6 +116,8 @@ public class gameManager : MonoBehaviour
         isCleared = false;
         isGameEnded = false;
         Time.timeScale = 1f;
+        bestScoreNum.text = stageManager.I.GetBestScore(stage).ToString("D2"); // 최고점수
+
     }
     public void addScore(int score)// 스코어 추가
     {
