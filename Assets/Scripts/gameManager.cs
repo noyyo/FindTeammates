@@ -58,7 +58,7 @@ public class gameManager : MonoBehaviour
     public TextMeshProUGUI bestScoreNum;
     public TextMeshProUGUI FinishBestScroeNum;
     public TextMeshProUGUI FinishMatchingTryNum;
-    
+    public TextMeshProUGUI scoreTxt;
 
     public Member nextMember;
     public GameObject endPanel;
@@ -295,5 +295,20 @@ public class gameManager : MonoBehaviour
                 choosedCard.GetComponent<card>().closeCard(0f);
             }
         }
+    }
+        private void endPanelTxt()
+    {
+        FinishMatchingTryNum.text = matchingCount[stage - 1].ToString("D2");
+        FinishBestScroeNum.text = stageManager.bestScore[stage - 1].ToString("D2");
+        scoreTxt.text = score.ToString("D2") + "��";
+        endPanel.SetActive(true);
+    }
+        public void minusTime()
+    {
+        Invoke("minusTimeInvoke", 1.0f);
+    }
+        void minusTimeInvoke()
+    {
+        minusTxt.SetActive(false);
     }
 }
