@@ -203,8 +203,6 @@ public class gameManager : MonoBehaviour
         }
         matchingTryNum.text = (++matchingCount).ToString("D2");
         ChangeFocus(focusedMember);
-        FinishMatchingTryNum.text = (++matchingCount).ToString("D2");
-
 
     }
     private void GameEnd()
