@@ -7,7 +7,11 @@ public class card : MonoBehaviour
     public Animator anim;
     public AudioClip flip;
     public AudioSource audioSource;
+    public int flipCount;
+    public bool isFliped;
+
     int n;
+
 
     // Start is called before the first frame update
     void Start()
@@ -23,6 +27,15 @@ public class card : MonoBehaviour
 
     public void openCard()
     {
+        gameManager.I.CardClicked();
+        if (gameManager.I.choosedCard != null)
+        {
+            anim.SetTrigger("alreadyChoosed");
+            gameManager.I.choosedCard.GetComponent<card>().closeCard(0.5f);
+            
+            gameManager.I.choosedCard = null;
+            return;
+        }
         n = Random.Range(0, 4);
         audioSource.PlayOneShot(flip);
         if (n == 0)
@@ -36,12 +49,19 @@ public class card : MonoBehaviour
         transform.Find("front").gameObject.SetActive(true);
         transform.Find("back").gameObject.SetActive(false);
         gameManager.I.choosedCard = gameObject;
-        gameManager.I.Match();
+        flipCount++;
+        ChangeFlipedCardColor(gameObject.transform.Find("back").GetComponent<SpriteRenderer>());
+
+        if (gameManager.I.focusedMember != null)
+        {
+            gameManager.I.Match();
+        }
     }
 
     public void destroyCard()
     {
-        Invoke("destroyCardInvoke", 1.0f);
+        gameManager.I.choosedCard = null;
+        Invoke("destroyCardInvoke", 0.5f);
     }
 
     void destroyCardInvoke()
@@ -49,8 +69,9 @@ public class card : MonoBehaviour
         Destroy(gameObject);
     }
 
-    public void closeCard(float delay = 1f)
+    public void closeCard(float delay = 0.5f)
     {
+        gameManager.I.choosedCard = null;
         Invoke("closeCardInvoke", delay);
     }
 
@@ -66,5 +87,12 @@ public class card : MonoBehaviour
             anim.SetBool("isOpen4", false);
         transform.Find("back").gameObject.SetActive(true);
         transform.Find("front").gameObject.SetActive(false);
+    }
+    public void ChangeFlipedCardColor(SpriteRenderer cardRenderer)
+    {
+        if (cardRenderer.color.r > 100f / 255f)
+        {
+            cardRenderer.color -= new Color(20f / 255f, 20f / 255f, 20f / 255f, 0f);
+        }
     }
 }

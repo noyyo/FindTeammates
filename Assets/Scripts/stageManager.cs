@@ -7,47 +7,88 @@ using TMPro;
 
 public class stageManager : MonoBehaviour
 {
-    public static int stageNum=1;
-    public static int[] bestScore = new int[3];
-    public TextMeshProUGUI bestScore_1;
-    public TextMeshProUGUI bestScore_2;
-    public TextMeshProUGUI bestScore_3;
-    public GameObject lockStage_2;
-    public GameObject openStage_2;
-    public GameObject lockStage_3;
-    public GameObject openStage_3;
+    private const int STAGE_COUNT = 3;
+    public int StageCount { get { return STAGE_COUNT; } }
+    private static stageManager i;
+    public static stageManager I
+    {
+        get
+        {
+            if (i == null)
+                i = new stageManager();
+            return i;
+        }
+    }
 
-    public static void call()
+    void Awake()
+    {
+        if (i == null)
+        {
+            i = this;
+        }
+        if (this != i)
+        {
+            Destroy(gameObject);
+        }
+        DontDestroyOnLoad(gameObject);
+        Init();
+
+    }
+    public Canvas stageUI;
+    public int stageNum;
+    private int[] bestScores;
+    private bool[] stageClearFlags;
+    private bool sceneLoaded;
+
+    public void LoadMainScene()
     {
         SceneManager.LoadScene("MainScene");
     }
-
-    // Start is called before the first frame update
     void Start()
     {
-        bestScore_1.text = bestScore[0].ToString("D2");
-        bestScore_2.text = bestScore[1].ToString("D2");
-        bestScore_3.text = bestScore[2].ToString("D2");
-        checkStage();
+    }
+    private void Init()
+    {
+        bestScores = new int[STAGE_COUNT];
+        stageClearFlags = new bool[STAGE_COUNT];
     }
 
-    // Update is called once per frame
-    void Update()
+public void SetBestScoreTxt()
     {
-        
+        if (SceneManager.GetActiveScene().name != "SelectScene")
+            return;
+        for (int i = 1; i <= STAGE_COUNT; ++i)
+        {
+            stageUI.transform.GetChild(i - 1).transform.Find($"bestScore{i}").gameObject.GetComponent<TextMeshProUGUI>().text = bestScores[i - 1].ToString("D2");
+        }
     }
-    
-    public void checkStage()
+    public void SetStageClearFlag(int stageNum, bool isCleared)
     {
-        if (bestScore[0] > 0)
+        stageClearFlags[stageNum - 1] = isCleared;
+    }
+    public int GetBestScore(int stageNum)
+    {
+        if (stageNum <= STAGE_COUNT && stageNum >= 1) return bestScores[stageNum - 1];
+        else return 0;
+    }
+    public void SetBestScore(int stageNum, int bestScore)
+    {
+        bestScores[stageNum - 1] = bestScore;
+    }
+    public void UpdateStageInfos()
+    {
+        stageUI = FindObjectOfType<Canvas>();
+        for (int i = 1; i <= STAGE_COUNT; ++i)
         {
-            openStage_2.SetActive(true);
-            lockStage_2.SetActive(false);
+            if (i > 1)
+            {
+                stageUI.gameObject.transform.GetChild(i - 1).transform.Find($"openStage{i}").gameObject.SetActive(stageClearFlags[i - 2]);
+            }
+            if (i > 1 && i <= STAGE_COUNT)
+            {
+                stageUI.gameObject.transform.GetChild(i - 1).transform.Find($"lockStage{i}").gameObject.SetActive(!stageClearFlags[i - 2]);
+            }
         }
-        if (bestScore[1] > 0)
-        {
-            openStage_3.SetActive(true);
-            lockStage_3.SetActive(false);
-        }
+        SetBestScoreTxt();
     }
 }
