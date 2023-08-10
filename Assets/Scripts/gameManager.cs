@@ -46,7 +46,13 @@ public class gameManager : MonoBehaviour
     public AudioClip match;
     public AudioSource audioSource;
     public TextMeshProUGUI bestScoreNum;
+    public TextMeshProUGUI FinishBestScroeNum;
+    public TextMeshProUGUI FinishMatchingTryNum;
+    
+
     public Member nextMember;
+    public GameObject endPanel;
+
 
     private float time = 60f;
     private float origintime = 60f; // 초기 시간값을 통해 스코어 변화를 주기 위한 변수(위에 시간 변경 시 같이 변경해 주세요~~)
@@ -94,6 +100,7 @@ public class gameManager : MonoBehaviour
     {
         totalscore += score;
         bestScoreNum.text = totalscore.ToString("D2");
+        FinishBestScroeNum.text = totalscore.ToString("D2");
     }
     public void minusTime()
     {
@@ -154,13 +161,13 @@ public class gameManager : MonoBehaviour
             choosedCard.GetComponent<card>().closeCard();
         }
         matchingTryNum.text = (++matchingCount[stage-1]).ToString("D2");
+        FinishMatchingTryNum.text = (++matchingCount[stage - 1]).ToString("D2");
         choosedCard = null;
     }
     void GameEnd()
     {
         Time.timeScale = 0;
-        retryText.SetActive(true);
-        exitText.SetActive(true);
+        endPanel.SetActive(true);
     }
     public void retryGame()
     {
@@ -208,13 +215,13 @@ public class gameManager : MonoBehaviour
         Time.timeScale = 1;
     }
 
-    private int isBestScore(int totalscore, int bestSore)
+    private int isBestScore(int totalscore, int bestScore)
     {
-        if (bestSore == 0)
-            bestSore = totalscore;
-        else if (bestSore < totalscore)
-            bestSore = totalscore;
-        return bestSore;
+        if (bestScore == 0)
+            bestScore = totalscore;
+        else if (bestScore < totalscore)
+            bestScore = totalscore;
+        return bestScore;
     }
 
     private void firstCard_TimeLimit()
