@@ -774,6 +774,7 @@ MonoBehaviour:
   audioSource: {fileID: 238576316}
   collocator: {fileID: 130537955}
   bestScoreNum: {fileID: 705484146}
+  nextMember: {fileID: 0}
 --- !u!4 &238576315
 Transform:
   m_ObjectHideFlags: 0
@@ -899,7 +900,7 @@ GameObject:
   - component: {fileID: 259969888}
   m_Layer: 0
   m_Name: memberKDH
-  m_TagString: Untagged
+  m_TagString: KDH
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2552,7 +2553,7 @@ GameObject:
   - component: {fileID: 1174374745}
   m_Layer: 0
   m_Name: memberSBE
-  m_TagString: Untagged
+  m_TagString: SBE
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3232,7 +3233,7 @@ GameObject:
   - component: {fileID: 1467103483}
   m_Layer: 0
   m_Name: memberJUS
-  m_TagString: Untagged
+  m_TagString: JUS
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4655,7 +4656,7 @@ GameObject:
   - component: {fileID: 751438811940954402}
   m_Layer: 0
   m_Name: memberYJS
-  m_TagString: Untagged
+  m_TagString: YJS
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

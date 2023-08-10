@@ -27,6 +27,7 @@ public class card : MonoBehaviour
 
     public void openCard()
     {
+        gameManager.I.CardClicked();
         if (gameManager.I.choosedCard != null)
         {
             anim.SetTrigger("alreadyChoosed");
@@ -59,6 +60,7 @@ public class card : MonoBehaviour
 
     public void destroyCard()
     {
+        gameManager.I.choosedCard = null;
         Invoke("destroyCardInvoke", 0.5f);
     }
 
@@ -69,6 +71,7 @@ public class card : MonoBehaviour
 
     public void closeCard(float delay = 0.5f)
     {
+        gameManager.I.choosedCard = null;
         Invoke("closeCardInvoke", delay);
     }
 

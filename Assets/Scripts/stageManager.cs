@@ -31,11 +31,14 @@ public class stageManager : MonoBehaviour
             Destroy(gameObject);
         }
         DontDestroyOnLoad(gameObject);
+        Init();
+
     }
     public Canvas stageUI;
     public int stageNum;
     private int[] bestScores;
     private bool[] stageClearFlags;
+    private bool sceneLoaded;
 
     public void LoadMainScene()
     {
@@ -43,12 +46,9 @@ public class stageManager : MonoBehaviour
     }
     void Start()
     {
-        Init();
-        UpdateStageInfos();
     }
     private void Init()
     {
-        stageUI = FindObjectOfType<Canvas>();
         bestScores = new int[STAGE_COUNT];
         stageClearFlags = new bool[STAGE_COUNT];
     }
@@ -77,18 +77,16 @@ public void SetBestScoreTxt()
     }
     public void UpdateStageInfos()
     {
-        if (SceneManager.GetActiveScene().name != "SelectScene")
-            return;
-
+        stageUI = FindObjectOfType<Canvas>();
         for (int i = 1; i <= STAGE_COUNT; ++i)
         {
-            if (stageClearFlags[i - 1])
+            if (i > 1)
             {
-                stageUI.transform.GetChild(i - 1).transform.Find($"openStage{i}").gameObject.SetActive(true);
-                if (i != STAGE_COUNT)
-                {
-                    stageUI.transform.GetChild(i - 1).transform.Find($"lockStage{i + 1}").gameObject.SetActive(false);
-                }
+                stageUI.gameObject.transform.GetChild(i - 1).transform.Find($"openStage{i}").gameObject.SetActive(stageClearFlags[i - 2]);
+            }
+            if (i > 1 && i <= STAGE_COUNT)
+            {
+                stageUI.gameObject.transform.GetChild(i - 1).transform.Find($"lockStage{i}").gameObject.SetActive(!stageClearFlags[i - 2]);
             }
         }
         SetBestScoreTxt();

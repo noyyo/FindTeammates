@@ -52,8 +52,11 @@ public class gameManager : MonoBehaviour
 
     private float time;
     private bool isWarning;
+    private bool firstCardClicked;
+    private bool isCleared;
+    private bool isGameEnded;
     public TextMeshProUGUI bestScoreNum;
-    //중복되어 있는 텍스트 삭제
+    public Member nextMember;
 
     private float origintime = 60f; // 초기 시간값을 통해 스코어 변화를 주기 위한 변수(위에 시간 변경 시 같이 변경해 주세요~~)
     private int matchingCount;
@@ -61,11 +64,14 @@ public class gameManager : MonoBehaviour
     private int totalscore;
     private int score;
     private string[] initial = { "KDH", "YJS", "SBE", "JUS" }; //사진 이름 변수
+    private const float TIME_LIMIT = 5f; // 첫 번째 카드 제한 시간
+    private float clickedTime;
 
     // Start is called before the first frame update
     void Start()
     {
         StartStage();
+        //bestScoreNum.text = stageManager.bestScore[stage-1].ToString("D2") ; // 최고점수
     }
 
     // Update is called once per frame
@@ -73,9 +79,9 @@ public class gameManager : MonoBehaviour
     {
         time -= Time.deltaTime; //초기 값에서 시간을 감소
         timeTxt.text = time.ToString("N2"); // 시간을 2자리 표시
-
         // 시간이 10초 미만일때 효과 및 종료
-        if (time < 10f)
+        CheckTimeLimit();
+        if (time < 10f && !isGameEnded)
         {
             if (isWarning == false)
             {
@@ -84,7 +90,6 @@ public class gameManager : MonoBehaviour
         }
         if (time < 0f)
         {
-            Debug.Log("시간");
             timeTxt.text = "0.00";
             Invoke("GameEnd",0f);
         }
@@ -98,10 +103,14 @@ public class gameManager : MonoBehaviour
         score = 0;
         totalscore = 0;
         matchingCount = 0;
-        time = 60f;
+        time = stage * 20f;
         origintime = time;
+        clickedTime = 0f;
         cardArr(stage);
         isWarning = false;
+        firstCardClicked = false;
+        isCleared = false;
+        isGameEnded = false;
         Time.timeScale = 1f;
     }
     public void addScore(int score)// 스코어 추가
@@ -142,6 +151,8 @@ public class gameManager : MonoBehaviour
     }
     public void Match()
     {
+        firstCardClicked = false;
+
         string choosedCardInitial = choosedCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite.name.Substring(0, 3);
         string focuesdMemberInitial = focusedMember.initial;
         // 위에 선택된 카드의 이니셜 == 내가 선택한 카드의 이니셜과 같을 때
@@ -171,6 +182,7 @@ public class gameManager : MonoBehaviour
 
             if (cardsLeft == 1)
             {
+                isCleared = true;
                 Invoke("GameEnd", 0.5f);
             }
 
@@ -184,18 +196,18 @@ public class gameManager : MonoBehaviour
             choosedCard.GetComponent<card>().closeCard();
         }
         matchingTryNum.text = (++matchingCount).ToString("D2");
-        choosedCard = null;
-        focusedMember.anim.SetBool("isFocused", false);
-        focusedMember = null;
+        ChangeFocus(focusedMember);
     }
     private void GameEnd()
     {
+        isGameEnded = true;
         Time.timeScale = 0;
         timeTxt.GetComponent<Animator>().SetBool("isImminent", false);
-        audioManager.I.SetPitch(1f);
         isWarning = false;
+        audioManager.I.SetPitch(1f);
         retryText.SetActive(true);
         exitText.SetActive(true);
+        stageManager.I.SetStageClearFlag(stage, isCleared);
     }
     public void retryGame()
     {
@@ -245,5 +257,29 @@ public class gameManager : MonoBehaviour
     private bool isBestScore(int score)
     {
         return score > stageManager.I.GetBestScore(stage);
+    }
+    public void CardClicked()
+    {
+        if (focusedMember != null) return;
+        if (choosedCard != null) return;
+
+        firstCardClicked = true;
+        clickedTime = time;
+    }
+    public void CheckTimeLimit()
+    {
+        if (!firstCardClicked) return;
+        if (time < clickedTime - TIME_LIMIT)
+        {
+            firstCardClicked = false;
+            if (focusedMember != null)
+            {
+                ChangeFocus(focusedMember);
+            }
+            else if (choosedCard != null)
+            {
+                choosedCard.GetComponent<card>().closeCard(0f);
+            }
+        }
     }
 }

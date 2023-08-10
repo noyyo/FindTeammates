@@ -131,7 +131,7 @@ Animator:
   m_GameObject: {fileID: 4503484048088155125}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 940a4b8f440303d499da1563f7d8754b, type: 2}
+  m_Controller: {fileID: 9100000, guid: 3b18280e69bc5d44fb50fd537ff769b8, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -157,6 +157,8 @@ MonoBehaviour:
   anim: {fileID: 6070442291720586332}
   flip: {fileID: 8300000, guid: 42eb8df09dd13e443ae1b183b8829771, type: 3}
   audioSource: {fileID: 3535141552772024564}
+  flipCount: 0
+  isFliped: 0
 --- !u!114 &5940186305000416815
 MonoBehaviour:
   m_ObjectHideFlags: 0
