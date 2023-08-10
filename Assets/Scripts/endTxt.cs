@@ -27,7 +27,7 @@ public class endTxt : MonoBehaviour
     }
     public void nextStage()
     {
-        if (stageManager.stageNum <=2 && stageManager.bestScore[stageManager.stageNum - 1] != 0)
+        if (stageManager.stageNum <=2 && stageManager.stageClearFlags[stageManager.stageNum - 1])
         {
             stageManager.stageNum++;
             SceneManager.LoadScene("MainScene");

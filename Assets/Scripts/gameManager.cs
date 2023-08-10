@@ -22,7 +22,7 @@ public class gameManager : MonoBehaviour
             }
         }
 
-    private void Awake()
+    void Awake()
     {
         if (i == null)
         {
@@ -33,57 +33,65 @@ public class gameManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+    
 
     public TextMeshProUGUI timeTxt;
     public TextMeshProUGUI stage_1;
-    public GameObject retryText;
-    public GameObject exitText;
+    public GameObject retryText; //endText를 retryText로 변경
+    public GameObject exitText; //추가(SelectScene으로 가는 버튼)
     public GameObject card;
-    public GameObject minusTxt;
+    public GameObject cards;
+    public TextMeshProUGUI stageNum;
+    public GameObject minusTxt; //마이너스 텍스트 
     public TextMeshProUGUI matchingTryNum;
-    public Member focusedMember;
+    public Member focusedMember; //member 클래스
     public GameObject choosedCard;
     public AudioClip match;
     public AudioSource audioSource;
+    public Collocator collocator;
+
+    private float time;
+    private bool isWarning;
+    private bool firstCardClicked;
+    private bool isCleared;
+    private bool isGameEnded;
     public TextMeshProUGUI bestScoreNum;
     public TextMeshProUGUI FinishBestScroeNum;
     public TextMeshProUGUI FinishMatchingTryNum;
-    public GameObject endPanel;
     public TextMeshProUGUI scoreTxt;
 
-    private float time = stageManager.stageNum * 20f;
-    private float origintime;
-    private bool isWarning = false;
-    private int[] matchingCount = new int[3];
-    private int stage = stageManager.stageNum;
-    private int score = 0;
-    private string[] initial = { "KDH", "YJS", "SBE", "JUS" };
-    private float timeLimit = 5f;
+    public Member nextMember;
+    public GameObject endPanel;
+
+
+    private float origintime = 60f; // 초기 시간값을 통해 스코어 변화를 주기 위한 변수(위에 시간 변경 시 같이 변경해 주세요~~)
+    private int matchingCount;
+    private int stage; // 스테이지 변수
+    private int totalscore;
+    private int score;
+    private string[] initial = { "KDH", "YJS", "SBE", "JUS" }; //사진 이름 변수
+    private const float TIME_LIMIT = 5f; // 첫 번째 카드 제한 시간
+    private float clickedTime;
 
     // Start is called before the first frame update
     void Start()
     {
-        origintime = time;
-        focusedMember.MemberClicked();
-        Time.timeScale = 1;
-        stage_1.text = stage.ToString();
-        bestScoreNum.text = stageManager.bestScore[stage-1].ToString("D2") ;
-        cardArr(stage);
+        StartStage();
+        //bestScoreNum.text = stageManager.bestScore[stage-1].ToString("D2") ; // 최고점수
     }
 
     // Update is called once per frame
     void Update()
     {
-        time -= Time.deltaTime;
-        timeTxt.text = time.ToString("N2");
-        firstCard_TimeLimit();
-        if (time < 10f)
+        time -= Time.deltaTime; //초기 값에서 시간을 감소
+        timeTxt.text = time.ToString("N2"); // 시간을 2자리 표시
+        // 시간이 10초 미만일때 효과 및 종료
+        CheckTimeLimit();
+        if (time < 10f && !isGameEnded)
         {
             if (isWarning == false)
             {
-                timeTxt.GetComponent<Animator>().SetBool("isImminent", true);
-                audioManager.I.SetPitch(1.2f);
-                isWarning = true;
+                WarningRemainingTime();
             }
         }
         if (time < 0f)
@@ -91,6 +99,36 @@ public class gameManager : MonoBehaviour
             timeTxt.text = "0.00";
             Invoke("GameEnd",0f);
         }
+    }
+
+    public void StartStage()
+    {
+
+        stage = stageManager.I.stageNum;
+        stageNum.text = stage.ToString();
+        score = 0;
+        totalscore = 0;
+        matchingCount = 0;
+        time = stage * 20f;
+        origintime = time;
+        clickedTime = 0f;
+        cardArr(stage);
+        isWarning = false;
+        firstCardClicked = false;
+        isCleared = false;
+        isGameEnded = false;
+        Time.timeScale = 1f;
+    }
+    public void addScore(int score)// 스코어 추가
+    {
+        totalscore += score;
+
+        if (isBestScore(totalscore))
+        {
+            bestScoreNum.text = totalscore.ToString("D2");
+            stageManager.I.SetBestScore(stage, totalscore);
+        }
+        FinishBestScroeNum.text = totalscore.ToString("D2");
     }
     public void minusTime()
     {
@@ -103,71 +141,106 @@ public class gameManager : MonoBehaviour
     }
     public void ChangeFocus(Member FocusMember)
     {
+        if (focusedMember == null)
+        {
+            focusedMember = FocusMember;
+            focusedMember.anim.SetBool("isFocused", true);
+            return;
+        }
+        if (focusedMember == FocusMember)
+        {
+            focusedMember.anim.SetBool("isFocused", false);
+            focusedMember = null;
+            return;
+        }
         focusedMember.anim.SetBool("isFocused", false);
         FocusMember.anim.SetBool("isFocused", true);
         focusedMember = FocusMember;
-        timeLimit = 5f;
     }
     public void Match()
     {
-        
+        firstCardClicked = false;
+
         string choosedCardInitial = choosedCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite.name.Substring(0, 3);
         string focuesdMemberInitial = focusedMember.initial;
+        // 위에 선택된 카드의 이니셜 == 내가 선택한 카드의 이니셜과 같을 때
 
         if (choosedCardInitial == focuesdMemberInitial)
         {
+            int cardsLeft = cards.transform.childCount;
+
             audioSource.PlayOneShot(match);
             choosedCard.GetComponent<card>().destroyCard();
             focusedMember.anim.SetTrigger("isMatched");
-            int cardsLeft = GameObject.Find("cards").transform.childCount;
-
+            
             if (time >= origintime * 5 / 6)
-                score += 6;
+                score = 6;
             else if (time >= origintime * 4 / 6)
-                score += 5;
+                score = 5;
             else if (time >= origintime * 3 / 6)
-                score += 4;
+                score = 4;
             else if (time >= origintime * 2 / 6)
-                score += 3;
+                score = 3;
             else if (time >= origintime * 1 / 6)
-                score += 2;
+                score = 2;
             else
-                score += 1;
-            bestScoreNum.text = isBestScore(score, stageManager.bestScore[stage - 1]).ToString("D2");
+                score = 1;
+            addScore(score);
+            // 시간별로 스코어를 다르게 추가해줌
 
             if (cardsLeft == 1)
             {
-                stageManager.bestScore[stage - 1] = isBestScore(score, stageManager.bestScore[stage - 1]);
-                Invoke("GameEnd", 1f);
+                isCleared = true;
+                Invoke("GameEnd", 0.5f);
             }
-                
+
         }
         else
         {
             minusTxt.SetActive(true);
             minusTime();
-            time -= 2;
+            time -= 2; // 매칭 실패시 시간 감소
             focusedMember.anim.SetTrigger("isFailed");
             choosedCard.GetComponent<card>().closeCard();
         }
-        matchingTryNum.text = (++matchingCount[stage-1]).ToString("D2");
-        choosedCard = null;
+        matchingTryNum.text = (++matchingCount).ToString("D2");
+        ChangeFocus(focusedMember);
+        FinishMatchingTryNum.text = (++matchingCount).ToString("D2");
+
+
     }
-    void GameEnd()
+    private void GameEnd()
     {
+        isGameEnded = true;
         Time.timeScale = 0;
-        endPanelTxt();
+
+        timeTxt.GetComponent<Animator>().SetBool("isImminent", false);
+        isWarning = false;
+        audioManager.I.SetPitch(1f);
+        retryText.SetActive(true);
+        exitText.SetActive(true);
+        stageManager.I.SetStageClearFlag(stage, isCleared);
+
+        endPanel.SetActive(true);
     }
     public void retryGame()
     {
-        SceneManager.LoadScene("MainScene");
+        SceneManager.LoadScene(SceneManager.GetActiveScene().ToString());
+        StartStage();
+    }
+
+    private void WarningRemainingTime()
+    {
+        timeTxt.GetComponent<Animator>().SetBool("isImminent", true);
+        audioManager.I.SetPitch(1.2f);
+        isWarning = true;
     }
 
     private void cardArr(int stage)
     {
-        //�̹��� ���� (ex : "picture")
+        //이미지 종류 (ex : "picture")
         string[] type = new string[stage];
-        //�̹��� �̸� (ex : "KDH_name")
+        //이미지 이름 (ex : "KDH_name")
         string[] str = new string[type.Length * initial.Length];
 
         string[] a = new string[] { "picture", "animal", "game" };
@@ -185,48 +258,57 @@ public class gameManager : MonoBehaviour
             }
         }
         str = str.OrderBy(item => Random.Range(-1.0f, 1.0f)).ToArray();
-        for (int i = 0; i < str.Length; i++)
+        collocator.amountToMake = str.Length;
+        int count = 0;
+        foreach (GameObject obj in collocator.InstantiatePrefab())
         {
-            GameObject newCard = Instantiate(card);
-            newCard.transform.parent = GameObject.Find("cards").transform;
-
-            float x = (i / 4) * 1.4f - (0.7f * stage);
-            float y = (i % 4) * 1.4f - 3.0f;
-            newCard.transform.position = new Vector3(x, y, 0);
-
-            string imageName = str[i];
-            newCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("MemberImages/" + imageName);
+            string imageName = str[count];
+            obj.transform.Find("front").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("MemberImages/" + imageName);
+            count++;
         }
     }
-    private int isBestScore(int totalscore, int bestScore)
-    {
-        if (bestScore == 0)
-            bestScore = totalscore;
-        else if (bestScore < totalscore)
-            bestScore = totalscore;
-        return bestScore;
-    }
 
-    private void firstCard_TimeLimit()
+    private bool isBestScore(int score)
     {
-        timeLimit -= Time.deltaTime;
-        if (timeLimit <= 0)
+        return score > stageManager.I.GetBestScore(stage);
+    }
+    public void CardClicked()
+    {
+        if (focusedMember != null) return;
+        if (choosedCard != null) return;
+
+        firstCardClicked = true;
+        clickedTime = time;
+    }
+    public void CheckTimeLimit()
+    {
+        if (!firstCardClicked) return;
+        if (time < clickedTime - TIME_LIMIT)
         {
-            if(focusedMember.initial == "YJS")
-                GameObject.FindWithTag("KDH").GetComponent<Member>().MemberClicked();
-            else if (focusedMember.initial == "KDH")
-                GameObject.FindWithTag("SBE").GetComponent<Member>().MemberClicked();
-            else if (focusedMember.initial == "SBE")
-                GameObject.FindWithTag("JUS").GetComponent<Member>().MemberClicked();
-            else
-                GameObject.FindWithTag("YJS").GetComponent<Member>().MemberClicked();
+            firstCardClicked = false;
+            if (focusedMember != null)
+            {
+                ChangeFocus(focusedMember);
+            }
+            else if (choosedCard != null)
+            {
+                choosedCard.GetComponent<card>().closeCard(0f);
+            }
         }
     }
-    private void endPanelTxt()
+        private void endPanelTxt()
     {
         FinishMatchingTryNum.text = matchingCount[stage - 1].ToString("D2");
         FinishBestScroeNum.text = stageManager.bestScore[stage - 1].ToString("D2");
-        scoreTxt.text = score.ToString("D2") + "��";
+        scoreTxt.text = score.ToString("D2") + "��";
         endPanel.SetActive(true);
+    }
+        public void minusTime()
+    {
+        Invoke("minusTimeInvoke", 1.0f);
+    }
+        void minusTimeInvoke()
+    {
+        minusTxt.SetActive(false);
     }
 }
