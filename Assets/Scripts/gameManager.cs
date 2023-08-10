@@ -37,14 +37,14 @@ public class gameManager : MonoBehaviour
 
     public TextMeshProUGUI timeTxt;
     public TextMeshProUGUI stage_1;
-    public GameObject retryText; //endText¸¦ retryText·Î º¯°æ
-    public GameObject exitText; //Ãß°¡(SelectSceneÀ¸·Î °¡´Â ¹öÆ°)
+    public GameObject retryText; //endTextë¥¼ retryTextë¡œ ë³€ê²½
+    public GameObject exitText; //ì¶”ê°€(SelectSceneìœ¼ë¡œ ê°€ëŠ” ë²„íŠ¼)
     public GameObject card;
     public GameObject cards;
     public TextMeshProUGUI stageNum;
-    public GameObject minusTxt; //¸¶ÀÌ³Ê½º ÅØ½ºÆ® 
+    public GameObject minusTxt; //ë§ˆì´ë„ˆìŠ¤ í…ìŠ¤íŠ¸ 
     public TextMeshProUGUI matchingTryNum;
-    public Member focusedMember; //member Å¬·¡½º
+    public Member focusedMember; //member í´ë˜ìŠ¤
     public GameObject choosedCard;
     public AudioClip match;
     public AudioSource audioSource;
@@ -56,30 +56,36 @@ public class gameManager : MonoBehaviour
     private bool isCleared;
     private bool isGameEnded;
     public TextMeshProUGUI bestScoreNum;
-    public Member nextMember;
+    public TextMeshProUGUI FinishBestScroeNum;
+    public TextMeshProUGUI FinishMatchingTryNum;
+    
 
-    private float origintime = 60f; // ÃÊ±â ½Ã°£°ªÀ» ÅëÇØ ½ºÄÚ¾î º¯È­¸¦ ÁÖ±â À§ÇÑ º¯¼ö(À§¿¡ ½Ã°£ º¯°æ ½Ã °°ÀÌ º¯°æÇØ ÁÖ¼¼¿ä~~)
+    public Member nextMember;
+    public GameObject endPanel;
+
+
+    private float origintime = 60f; // ì´ˆê¸° ì‹œê°„ê°’ì„ í†µí•´ ìŠ¤ì½”ì–´ ë³€í™”ë¥¼ ì£¼ê¸° ìœ„í•œ ë³€ìˆ˜(ìœ„ì— ì‹œê°„ ë³€ê²½ ì‹œ ê°™ì´ ë³€ê²½í•´ ì£¼ì„¸ìš”~~)
     private int matchingCount;
-    private int stage; // ½ºÅ×ÀÌÁö º¯¼ö
+    private int stage; // ìŠ¤í…Œì´ì§€ ë³€ìˆ˜
     private int totalscore;
     private int score;
-    private string[] initial = { "KDH", "YJS", "SBE", "JUS" }; //»çÁø ÀÌ¸§ º¯¼ö
-    private const float TIME_LIMIT = 5f; // Ã¹ ¹øÂ° Ä«µå Á¦ÇÑ ½Ã°£
+    private string[] initial = { "KDH", "YJS", "SBE", "JUS" }; //ì‚¬ì§„ ì´ë¦„ ë³€ìˆ˜
+    private const float TIME_LIMIT = 5f; // ì²« ë²ˆì§¸ ì¹´ë“œ ì œí•œ ì‹œê°„
     private float clickedTime;
 
     // Start is called before the first frame update
     void Start()
     {
         StartStage();
-        //bestScoreNum.text = stageManager.bestScore[stage-1].ToString("D2") ; // ÃÖ°íÁ¡¼ö
+        //bestScoreNum.text = stageManager.bestScore[stage-1].ToString("D2") ; // ìµœê³ ì ìˆ˜
     }
 
     // Update is called once per frame
     void Update()
     {
-        time -= Time.deltaTime; //ÃÊ±â °ª¿¡¼­ ½Ã°£À» °¨¼Ò
-        timeTxt.text = time.ToString("N2"); // ½Ã°£À» 2ÀÚ¸® Ç¥½Ã
-        // ½Ã°£ÀÌ 10ÃÊ ¹Ì¸¸ÀÏ¶§ È¿°ú ¹× Á¾·á
+        time -= Time.deltaTime; //ì´ˆê¸° ê°’ì—ì„œ ì‹œê°„ì„ ê°ì†Œ
+        timeTxt.text = time.ToString("N2"); // ì‹œê°„ì„ 2ìë¦¬ í‘œì‹œ
+        // ì‹œê°„ì´ 10ì´ˆ ë¯¸ë§Œì¼ë•Œ íš¨ê³¼ ë° ì¢…ë£Œ
         CheckTimeLimit();
         if (time < 10f && !isGameEnded)
         {
@@ -113,14 +119,16 @@ public class gameManager : MonoBehaviour
         isGameEnded = false;
         Time.timeScale = 1f;
     }
-    public void addScore(int score)// ½ºÄÚ¾î Ãß°¡
+    public void addScore(int score)// ìŠ¤ì½”ì–´ ì¶”ê°€
     {
         totalscore += score;
+
         if (isBestScore(totalscore))
         {
             bestScoreNum.text = totalscore.ToString("D2");
             stageManager.I.SetBestScore(stage, totalscore);
         }
+        FinishBestScroeNum.text = totalscore.ToString("D2");
     }
     public void minusTime()
     {
@@ -155,7 +163,7 @@ public class gameManager : MonoBehaviour
 
         string choosedCardInitial = choosedCard.transform.Find("front").GetComponent<SpriteRenderer>().sprite.name.Substring(0, 3);
         string focuesdMemberInitial = focusedMember.initial;
-        // À§¿¡ ¼±ÅÃµÈ Ä«µåÀÇ ÀÌ´Ï¼È == ³»°¡ ¼±ÅÃÇÑ Ä«µåÀÇ ÀÌ´Ï¼È°ú °°À» ¶§
+        // ìœ„ì— ì„ íƒëœ ì¹´ë“œì˜ ì´ë‹ˆì…œ == ë‚´ê°€ ì„ íƒí•œ ì¹´ë“œì˜ ì´ë‹ˆì…œê³¼ ê°™ì„ ë•Œ
 
         if (choosedCardInitial == focuesdMemberInitial)
         {
@@ -178,7 +186,7 @@ public class gameManager : MonoBehaviour
             else
                 score = 1;
             addScore(score);
-            // ½Ã°£º°·Î ½ºÄÚ¾î¸¦ ´Ù¸£°Ô Ãß°¡ÇØÁÜ
+            // ì‹œê°„ë³„ë¡œ ìŠ¤ì½”ì–´ë¥¼ ë‹¤ë¥´ê²Œ ì¶”ê°€í•´ì¤Œ
 
             if (cardsLeft == 1)
             {
@@ -191,23 +199,29 @@ public class gameManager : MonoBehaviour
         {
             minusTxt.SetActive(true);
             minusTime();
-            time -= 2; // ¸ÅÄª ½ÇÆĞ½Ã ½Ã°£ °¨¼Ò
+            time -= 2; // ë§¤ì¹­ ì‹¤íŒ¨ì‹œ ì‹œê°„ ê°ì†Œ
             focusedMember.anim.SetTrigger("isFailed");
             choosedCard.GetComponent<card>().closeCard();
         }
         matchingTryNum.text = (++matchingCount).ToString("D2");
         ChangeFocus(focusedMember);
+        FinishMatchingTryNum.text = (++matchingCount).ToString("D2");
+
+
     }
     private void GameEnd()
     {
         isGameEnded = true;
         Time.timeScale = 0;
+
         timeTxt.GetComponent<Animator>().SetBool("isImminent", false);
         isWarning = false;
         audioManager.I.SetPitch(1f);
         retryText.SetActive(true);
         exitText.SetActive(true);
         stageManager.I.SetStageClearFlag(stage, isCleared);
+
+        endPanel.SetActive(true);
     }
     public void retryGame()
     {
@@ -224,9 +238,9 @@ public class gameManager : MonoBehaviour
 
     private void cardArr(int stage)
     {
-        //ÀÌ¹ÌÁö Á¾·ù (ex : "picture")
+        //ì´ë¯¸ì§€ ì¢…ë¥˜ (ex : "picture")
         string[] type = new string[stage];
-        //ÀÌ¹ÌÁö ÀÌ¸§ (ex : "KDH_name")
+        //ì´ë¯¸ì§€ ì´ë¦„ (ex : "KDH_name")
         string[] str = new string[type.Length * initial.Length];
 
         string[] a = new string[] { "picture", "animal", "game" };
