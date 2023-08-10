@@ -46,7 +46,7 @@ public class gameManager : MonoBehaviour
     public AudioClip match;
     public AudioSource audioSource;
     public TextMeshProUGUI bestScoreNum;
-    //중복되어 있는 텍스트 삭제
+    public Member nextMember;
 
     private float time = 60f;
     private float origintime = 60f; // 초기 시간값을 통해 스코어 변화를 주기 위한 변수(위에 시간 변경 시 같이 변경해 주세요~~)
@@ -56,6 +56,7 @@ public class gameManager : MonoBehaviour
     private int totalscore = 0;
     private int score = 0;
     private string[] initial = { "KDH", "YJS", "SBE", "JUS" }; //사진 이름 변수
+    private float timeLimit = 5f; // 첫 번째 카드 제한 시간
 
     // Start is called before the first frame update
     void Start()
@@ -63,7 +64,7 @@ public class gameManager : MonoBehaviour
         focusedMember.MemberClicked(); // 애니메이션?
         timeScoreReset(); // 재시작시 시간 초기화
         stage_1.text = stage.ToString(); // 스테이지 값 변환 (우측 상단 stage 1 <-1
-        //bestScoreNum.text = stageManager.bestScore[stage-1].ToString("D2") ; // 최고점수
+        bestScoreNum.text = stageManager.bestScore[stage-1].ToString("D2") ; // 최고점수
         cardArr(stage); //카드 배치
     }
 
@@ -72,7 +73,7 @@ public class gameManager : MonoBehaviour
     {
         time -= Time.deltaTime; //초기 값에서 시간을 감소
         timeTxt.text = time.ToString("N2"); // 시간을 2자리 표시
-
+        firstCard_TimeLimit();
         // 시간이 10초 미만일때 효과 및 종료
         if (time < 10f)
         {
@@ -214,5 +215,22 @@ public class gameManager : MonoBehaviour
         else if (bestSore < totalscore)
             bestSore = totalscore;
         return bestSore;
+    }
+
+    private void firstCard_TimeLimit()
+    {
+        timeLimit -= Time.deltaTime;
+        if (timeLimit <= 0)
+        {
+            if(focusedMember.initial == "YJS")
+                GameObject.FindWithTag("KDH").GetComponent<Member>().MemberClicked();
+            else if (focusedMember.initial == "KDH")
+                GameObject.FindWithTag("SBE").GetComponent<Member>().MemberClicked();
+            else if (focusedMember.initial == "SBE")
+                GameObject.FindWithTag("JUS").GetComponent<Member>().MemberClicked();
+            else
+                GameObject.FindWithTag("YJS").GetComponent<Member>().MemberClicked();
+            timeLimit = 5f;
+        }
     }
 }
