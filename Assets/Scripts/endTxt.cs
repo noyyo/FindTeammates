@@ -25,11 +25,11 @@ public class endTxt : MonoBehaviour
     {
         SceneManager.LoadScene("SelectScene");
     }
-    public void nextStage()
+    public void NextStage()
     {
-        if (stageManager.stageNum <=2 && stageManager.stageClearFlags[stageManager.stageNum - 1])
+        if (stageManager.I.CanGoNextStage())
         {
-            stageManager.stageNum++;
+            stageManager.I.stageNum++;
             SceneManager.LoadScene("MainScene");
         }
     }

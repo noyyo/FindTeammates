@@ -91,4 +91,15 @@ public void SetBestScoreTxt()
         }
         SetBestScoreTxt();
     }
+    public bool CanGoNextStage()
+    {
+        if (stageNum >= 1 && stageNum <= STAGE_COUNT - 1)
+        {
+            return stageClearFlags[stageNum - 1];
+        }
+        else
+        {
+            return false;
+        }
+    }
 }

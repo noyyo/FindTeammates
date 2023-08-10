@@ -60,7 +60,6 @@ public class gameManager : MonoBehaviour
     public TextMeshProUGUI FinishMatchingTryNum;
     public TextMeshProUGUI scoreTxt;
 
-    public Member nextMember;
     public GameObject endPanel;
 
 
@@ -122,13 +121,12 @@ public class gameManager : MonoBehaviour
     public void addScore(int score)// 스코어 추가
     {
         totalscore += score;
-
+        scoreTxt.text = totalscore.ToString();
         if (isBestScore(totalscore))
         {
             bestScoreNum.text = totalscore.ToString("D2");
             stageManager.I.SetBestScore(stage, totalscore);
         }
-        FinishBestScroeNum.text = totalscore.ToString("D2");
     }
     public void minusTime()
     {
@@ -217,11 +215,10 @@ public class gameManager : MonoBehaviour
         timeTxt.GetComponent<Animator>().SetBool("isImminent", false);
         isWarning = false;
         audioManager.I.SetPitch(1f);
-        retryText.SetActive(true);
-        exitText.SetActive(true);
+
         stageManager.I.SetStageClearFlag(stage, isCleared);
 
-        endPanel.SetActive(true);
+        endPanelTxt();
     }
     public void retryGame()
     {
@@ -296,19 +293,14 @@ public class gameManager : MonoBehaviour
             }
         }
     }
-        private void endPanelTxt()
+    private void endPanelTxt()
     {
-        FinishMatchingTryNum.text = matchingCount[stage - 1].ToString("D2");
-        FinishBestScroeNum.text = stageManager.bestScore[stage - 1].ToString("D2");
-        scoreTxt.text = score.ToString("D2") + "��";
         endPanel.SetActive(true);
-    }
-        public void minusTime()
-    {
-        Invoke("minusTimeInvoke", 1.0f);
-    }
-        void minusTimeInvoke()
-    {
-        minusTxt.SetActive(false);
+        FinishMatchingTryNum.text = matchingCount.ToString("D2");
+        FinishBestScroeNum.text = stageManager.I.GetBestScore(stage).ToString("D2");
+        scoreTxt.text = totalscore.ToString() + " 점";
+        retryText.SetActive(true);
+        exitText.SetActive(true);
+
     }
 }
