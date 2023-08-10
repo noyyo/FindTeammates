@@ -63,7 +63,7 @@ public class gameManager : MonoBehaviour
         focusedMember.MemberClicked(); // 애니메이션?
         timeScoreReset(); // 재시작시 시간 초기화
         stage_1.text = stage.ToString(); // 스테이지 값 변환 (우측 상단 stage 1 <-1
-        //bestScoreNum.text = stageManager.bestScore[stage-1].ToString("D2") ; // 최고점수
+        bestScoreNum.text = stageManager.bestScore[stage-1].ToString("D2") ; // 최고점수
         cardArr(stage); //카드 배치
     }
 
