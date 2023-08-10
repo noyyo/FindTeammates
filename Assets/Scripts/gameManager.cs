@@ -32,7 +32,6 @@ public class gameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
-        DontDestroyOnLoad(gameObject);
     }
     
 
@@ -41,6 +40,7 @@ public class gameManager : MonoBehaviour
     public GameObject retryText; //endText를 retryText로 변경
     public GameObject exitText; //추가(SelectScene으로 가는 버튼)
     public GameObject card;
+    public GameObject cards;
     public TextMeshProUGUI stageNum;
     public GameObject minusTxt; //마이너스 텍스트 
     public TextMeshProUGUI matchingTryNum;
@@ -56,18 +56,16 @@ public class gameManager : MonoBehaviour
     //중복되어 있는 텍스트 삭제
 
     private float origintime = 60f; // 초기 시간값을 통해 스코어 변화를 주기 위한 변수(위에 시간 변경 시 같이 변경해 주세요~~)
-    private int[] matchingCount = new int[3]; // 매칭횟수 변수 [stage 갯수]
-    private int stage = stageManager.stageNum; // 스테이지 변수
-    private int totalscore = 0;
-    private int score = 0;
+    private int matchingCount;
+    private int stage; // 스테이지 변수
+    private int totalscore;
+    private int score;
     private string[] initial = { "KDH", "YJS", "SBE", "JUS" }; //사진 이름 변수
 
     // Start is called before the first frame update
     void Start()
     {
-        stage_1.text = stage.ToString(); // 스테이지 값 변환 (우측 상단 stage 1 <-1
-        //bestScoreNum.text = stageManager.bestScore[stage-1].ToString("D2") ; // 최고점수
-        cardArr(stage); //카드 배치
+        StartStage();
     }
 
     // Update is called once per frame
@@ -86,23 +84,34 @@ public class gameManager : MonoBehaviour
         }
         if (time < 0f)
         {
+            Debug.Log("시간");
             timeTxt.text = "0.00";
             Invoke("GameEnd",0f);
         }
     }
 
-    public void StartStage(int stage)
+    public void StartStage()
     {
+
+        stage = stageManager.I.stageNum;
         stageNum.text = stage.ToString();
+        score = 0;
+        totalscore = 0;
+        matchingCount = 0;
+        time = 60f;
+        origintime = time;
         cardArr(stage);
-        this.time = stage * 20f;
         isWarning = false;
         Time.timeScale = 1f;
     }
     public void addScore(int score)// 스코어 추가
     {
         totalscore += score;
-        bestScoreNum.text = totalscore.ToString("D2");
+        if (isBestScore(totalscore))
+        {
+            bestScoreNum.text = totalscore.ToString("D2");
+            stageManager.I.SetBestScore(stage, totalscore);
+        }
     }
     public void minusTime()
     {
@@ -139,11 +148,12 @@ public class gameManager : MonoBehaviour
 
         if (choosedCardInitial == focuesdMemberInitial)
         {
+            int cardsLeft = cards.transform.childCount;
+
             audioSource.PlayOneShot(match);
             choosedCard.GetComponent<card>().destroyCard();
             focusedMember.anim.SetTrigger("isMatched");
-            int cardsLeft = GameObject.Find("cards").transform.childCount;
-
+            
             if (time >= origintime * 5 / 6)
                 score = 6;
             else if (time >= origintime * 4 / 6)
@@ -161,8 +171,7 @@ public class gameManager : MonoBehaviour
 
             if (cardsLeft == 1)
             {
-                stageManager.bestScore[stage - 1] = isBestScore(totalscore, stageManager.bestScore[stage - 1]);
-                Invoke("GameEnd", 1f);
+                Invoke("GameEnd", 0.5f);
             }
 
         }
@@ -174,7 +183,7 @@ public class gameManager : MonoBehaviour
             focusedMember.anim.SetTrigger("isFailed");
             choosedCard.GetComponent<card>().closeCard();
         }
-        matchingTryNum.text = (++matchingCount[stage-1]).ToString("D2");
+        matchingTryNum.text = (++matchingCount).ToString("D2");
         choosedCard = null;
         focusedMember.anim.SetBool("isFocused", false);
         focusedMember = null;
@@ -191,7 +200,7 @@ public class gameManager : MonoBehaviour
     public void retryGame()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().ToString());
-        StartStage(stage);
+        StartStage();
     }
 
     private void WarningRemainingTime()
@@ -232,17 +241,9 @@ public class gameManager : MonoBehaviour
             count++;
         }
     }
-    private void timeScoreReset()
-    {
-        Time.timeScale = 1;
-    }
 
-    private int isBestScore(int totalscore, int bestSore)
+    private bool isBestScore(int score)
     {
-        if (bestSore == 0)
-            bestSore = totalscore;
-        else if (bestSore < totalscore)
-            bestSore = totalscore;
-        return bestSore;
+        return score > stageManager.I.GetBestScore(stage);
     }
 }
